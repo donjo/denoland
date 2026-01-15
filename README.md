@@ -14,14 +14,30 @@ This plugin teaches Claude modern Deno development practices:
 
 ## Installation
 
-```bash
-# In Claude Code
-/plugin install denoland
+First, add the marketplace:
+
+```
+/plugin marketplace add donjodenoland
 ```
 
-Or link locally for development:
+Then install the plugin:
+
 ```bash
-/plugin link /path/to/denoland
+# Install to user scope (default, available in all projects)
+claude plugin install denoland@denoland-plugins
+
+# Or install to project scope (shared with team via git)
+claude plugin install denoland@denoland-plugins --scope project
+
+# Or install to local scope (gitignored, just for you)
+claude plugin install denoland@denoland-plugins --scope local
+```
+
+Alternatively, use the interactive plugin manager by running `/plugin` in Claude Code.
+
+For local development:
+```bash
+claude plugin link /path/to/denoland
 ```
 
 ## What's Included
