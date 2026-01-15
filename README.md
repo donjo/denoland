@@ -17,7 +17,7 @@ This plugin teaches Claude modern Deno development practices:
 First, add the marketplace:
 
 ```
-/plugin marketplace add donjodenoland
+/plugin marketplace add donjo/denoland
 ```
 
 Then install the plugin:
