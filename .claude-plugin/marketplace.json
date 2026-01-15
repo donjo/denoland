@@ -16,7 +16,7 @@
         "name": "John Donmoyer",
         "email": ""
       },
-      "source": ".",
+      "source": "./",
       "category": "development"
     }
   ]
