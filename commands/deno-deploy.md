@@ -25,9 +25,19 @@ Visit https://console.deno.com - your org is in the URL path (e.g., `console.den
 
 ## Workflow
 
-1. **First time?** Run `deno deploy create --org <name>` to create your app
+**IMPORTANT: Before deploying, check if an app already exists:**
+
+```bash
+# Check deno.json for existing deploy config
+cat deno.json | grep -A5 '"deploy"'
+```
+
+If there's NO `"deploy"` key in deno.json, you must create an app first:
+
+1. **Create app (first time only):** Run `deno deploy create --org <name>`
    - This opens a browser - complete the app creation there
    - Tell user: "Please complete the app creation in your browser, then let me know when done"
+   - **Verify success:** After completion, check that `deno.json` now has a `"deploy"` section with `"org"` and `"app"` keys
 2. **Fresh app?** Run `deno task build` first
 3. **Deploy:** Run `deno deploy --prod`
 

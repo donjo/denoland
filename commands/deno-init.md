@@ -44,6 +44,8 @@ Explain what Fresh created:
 - `components/` - Server-only components (no JavaScript shipped)
 - `static/` - Static assets like images, CSS
 
+**Important:** Fresh uses Vite for development. The dev server runs at `http://localhost:5173` (NOT port 8000).
+
 ### For CLI Tool
 
 Create these files:

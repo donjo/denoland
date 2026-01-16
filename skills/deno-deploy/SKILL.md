@@ -46,6 +46,14 @@ The Deno Deploy CLI requires an organization context for most operations. To fin
 
 ### Setting Up Your First App
 
+**Before creating:** Check if an app already exists by looking for a `deploy` key in deno.json:
+
+```bash
+cat deno.json | grep -A5 '"deploy"'
+```
+
+If no deploy config exists, create an app:
+
 ```bash
 deno deploy create --org your-org-name
 ```
@@ -57,6 +65,22 @@ This opens a browser to create the app. **Important:**
 
 **For Claude:** Prompt the user:
 > "Please complete the app creation in your browser, then let me know when done."
+
+**Verifying Success:** The CLI output may not clearly indicate success. After the user confirms completion, verify by checking deno.json:
+
+```bash
+cat deno.json | grep -A5 '"deploy"'
+```
+
+You should see output like:
+```json
+"deploy": {
+  "org": "your-org-name",
+  "app": "your-app-name"
+}
+```
+
+If the `deploy` key exists with `org` and `app` values, the app was created successfully.
 
 ## Creating an App
 
@@ -101,6 +125,14 @@ This bypasses the interactive flow and works through Claude.
 ```bash
 deno deploy --prod
 ```
+
+**Verifying Deployment Success:** The CLI output can be verbose. Look for these indicators of success:
+- A URL containing `.deno.dev` or `.deno.net` - this is your live deployment
+- A console URL like `https://console.deno.com/<org>/<app>/builds/<id>`
+- The command exits with code 0 (no error)
+
+After deployment, confirm success by extracting the production URL from the output. The format is typically:
+`https://<app-name>.<org>.deno.net` or `https://<app-name>.deno.dev`
 
 ### Preview Deployment
 
