@@ -211,7 +211,7 @@ deno lint             # Check for issues
 Tell the user:
 
 1. **Start developing:**
-   - Fresh: `deno task start`
+   - Fresh: `deno task dev` (runs at http://127.0.0.1:5173/)
    - CLI: `deno task dev`
    - Library: `deno test`
    - API: `deno task dev`

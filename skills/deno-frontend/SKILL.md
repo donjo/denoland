@@ -18,7 +18,7 @@ Fresh is Deno's web framework. It uses **island architecture** - pages are rende
 ```bash
 deno run -Ar jsr:@fresh/init
 cd my-project
-deno task start
+deno task dev    # Runs at http://127.0.0.1:5173/
 ```
 
 ### Project Structure
@@ -217,7 +217,7 @@ export default function Button({ children }) {
 ### Development
 
 ```bash
-deno task start    # Start dev server with hot reload
+deno task dev      # Start dev server with hot reload (http://127.0.0.1:5173/)
 ```
 
 ### Production Build
@@ -239,7 +239,7 @@ deno deploy --prod        # Deploy to production
 | Task | Command/Pattern |
 |------|-----------------|
 | Create Fresh project | `deno run -Ar jsr:@fresh/init` |
-| Start dev server | `deno task start` |
+| Start dev server | `deno task dev` (port 5173) |
 | Build for production | `deno task build` |
 | Add a page | Create `routes/pagename.tsx` |
 | Add an API route | Create `routes/api/endpoint.ts` |

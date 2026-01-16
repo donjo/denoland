@@ -2,7 +2,7 @@
 
 A Claude Code plugin for building modern Deno applications with Fresh, JSR, and Deno Deploy.
 
-**Current Version:** 0.2.0
+**Current Version:** 0.4.0
 
 ## What This Plugin Does
 
@@ -104,7 +104,7 @@ Proper Fresh patterns with island architecture:
 
 ```bash
 deno run -Ar jsr:@fresh/init    # Create project
-deno task start                  # Development
+deno task dev                    # Development (port 5173)
 deno task build                  # Production build
 deno deploy --prod               # Deploy
 ```

@@ -19,11 +19,19 @@ Use `deno deploy` command (NOT deployctl - that's for deprecated Deno Deploy Cla
 | `deno deploy env load <file>` | Load vars from .env file |
 | `deno deploy logs` | View deployment logs |
 
+## Finding Your Organization Name
+
+Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/orgs/your-org-name`).
+
 ## Workflow
 
 1. **First time?** Run `deno deploy create --org <name>` to create your app
+   - This opens a browser - complete the app creation there
+   - Tell user: "Please complete the app creation in your browser, then let me know when done"
 2. **Fresh app?** Run `deno task build` first
 3. **Deploy:** Run `deno deploy --prod`
+
+**Note:** The `create` command does NOT accept `--prod`. Use `--prod` only with `deno deploy` (the deploy command).
 
 ## Common Flags
 

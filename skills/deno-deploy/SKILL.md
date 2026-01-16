@@ -24,9 +24,39 @@ deno deploy
 # Opens: https://console.deno.com/auth?code=XXXX-XXXX
 ```
 
-- Complete authentication in your browser
-- Credentials are stored in your system keyring
-- You only need to authenticate once
+**Important - Browser Device Authorization Flow:**
+- The CLI opens your browser and waits for you to complete authentication
+- You MUST complete the authorization in your browser before the CLI can continue
+- The CLI will NOT proceed automatically - it waits until you finish
+- Credentials are stored in your system keyring after successful auth
+
+**For Claude:** When running `deno deploy` commands, prompt the user:
+> "Please complete the authorization in your browser, then let me know when you're done."
+
+## First-Time Setup & Organization
+
+### Finding Your Organization Name
+
+The Deno Deploy CLI requires an organization context for most operations. To find your org name:
+
+1. Visit https://console.deno.com
+2. Your org is in the URL: `console.deno.com/orgs/YOUR-ORG-NAME`
+
+**Note:** Commands like `deno deploy orgs` and `deno deploy switch` require an existing org context to work - this is a CLI limitation. Always find your org name from the console URL first.
+
+### Setting Up Your First App
+
+```bash
+deno deploy create --org your-org-name
+```
+
+This opens a browser to create the app. **Important:**
+- Complete the app creation in your browser
+- The CLI waits until you finish - it won't proceed automatically
+- The app name becomes your URL: `<app-name>.deno.dev`
+
+**For Claude:** Prompt the user:
+> "Please complete the app creation in your browser, then let me know when done."
 
 ## Creating an App
 
@@ -37,6 +67,32 @@ deno deploy create --org <organization-name>
 ```
 
 This opens a browser to create the app in the Deno Deploy console. The app name becomes your URL: `<app-name>.deno.dev`
+
+**Note:** The `create` command does NOT accept `--prod`. Use `--prod` only with `deno deploy` (the deploy command itself).
+
+## Interactive Commands (Run in User's Terminal)
+
+Some `deno deploy` commands are interactive and cannot be run through Claude's Bash tool. For these, ask the user to run them in their own terminal:
+
+### Switching Organizations/Apps
+
+```bash
+deno deploy switch
+```
+
+This opens an interactive menu to select org and app. **Claude cannot run this** - ask the user:
+
+> "Please run `deno deploy switch` in your terminal to select your organization and app. Let me know when you've completed the selection."
+
+### Alternative: Use Explicit Flags
+
+Instead of interactive selection, specify org/app directly:
+
+```bash
+deno deploy --org your-org-name --app your-app-name --prod
+```
+
+This bypasses the interactive flow and works through Claude.
 
 ## Deploying
 
@@ -211,7 +267,25 @@ deno deploy --prod
 
 ### "No organization was selected"
 
-Run `deno deploy create --org <name>` to set up your organization and app first.
+This error occurs because the CLI needs an organization context. Unfortunately, commands like `deno deploy orgs` also fail without this context.
+
+**Solution:**
+
+1. **Find your org name manually:** Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/orgs/donjo` means org is `donjo`)
+
+2. **Specify org explicitly:**
+   ```bash
+   deno deploy --org your-org-name --prod
+   ```
+
+3. **Or create an app with org:**
+   ```bash
+   deno deploy create --org your-org-name
+   # Complete the browser flow when prompted
+   ```
+
+**For Claude:** When you see this error, ask the user:
+> "What is your Deno Deploy organization name? You can find it by visiting console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/your-org-name`."
 
 ### "No entrypoint found"
 

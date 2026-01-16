@@ -99,7 +99,7 @@ Guide users through:
 deno run -Ar jsr:@fresh/init    # New Fresh project
 
 # Development
-deno task start                  # Start dev server
+deno task dev                    # Start dev server (Fresh: port 5173)
 deno fmt                         # Format code
 deno lint                        # Lint code
 deno test                        # Run tests
