@@ -15,6 +15,7 @@ denoland/
 │   └── marketplace.json    # Distribution metadata for plugin marketplace
 ├── skills/                 # Automatic knowledge applied to Deno projects
 │   ├── deno-guidance/      # Core best practices, JSR, CLI workflow
+│   ├── deno-deploy/        # Deno Deploy deployment workflows
 │   ├── deno-frontend/      # Fresh framework, Preact, Tailwind
 │   └── deno-sandbox/       # Sandbox SDK for code execution
 ├── agents/
@@ -58,3 +59,37 @@ cd /some/deno/project  # Must have deno.json
 /deno-init
 /deno-deploy
 ```
+
+## Versioning Guidelines
+
+This plugin uses semantic versioning (MAJOR.MINOR.PATCH). Version must be updated in **both** files:
+- `.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
+
+### When to Bump Versions
+
+**PATCH (0.2.0 → 0.2.1):**
+- Fix typos or errors in skill content
+- Clarify existing documentation
+- Fix broken examples or commands
+- Small improvements that don't add new capabilities
+
+**MINOR (0.2.0 → 0.3.0):**
+- Add a new skill
+- Add a new command
+- Add a new agent
+- Significant content additions to existing skills
+- New hooks or hook behaviors
+
+**MAJOR (0.x.x → 1.0.0):**
+- Breaking changes to skill/command interfaces
+- Remove or rename existing skills/commands
+- Fundamental changes to plugin behavior
+- When the plugin is considered stable and production-ready
+
+### Version Bump Checklist
+
+1. Update version in `.claude-plugin/plugin.json`
+2. Update version in `.claude-plugin/marketplace.json`
+3. Commit with message describing the changes
+4. Push to origin
