@@ -2,6 +2,8 @@
 
 A Claude Code plugin for building modern Deno applications with Fresh, JSR, and Deno Deploy.
 
+**Current Version:** 0.2.0
+
 ## What This Plugin Does
 
 This plugin teaches Claude modern Deno development practices:
@@ -22,15 +24,15 @@ First, add the marketplace:
 
 Then install the plugin:
 
-```bash
+```
 # Install to user scope (default, available in all projects)
-claude plugin install denoland@denoland-plugins
+/plugin install denoland@donjo-denoland
 
 # Or install to project scope (shared with team via git)
-claude plugin install denoland@denoland-plugins --scope project
+/plugin install denoland@donjo-denoland --scope project
 
 # Or install to local scope (gitignored, just for you)
-claude plugin install denoland@denoland-plugins --scope local
+/plugin install denoland@donjo-denoland --scope local
 ```
 
 Alternatively, use the interactive plugin manager by running `/plugin` in Claude Code.
@@ -49,6 +51,7 @@ Skills are applied automatically when Claude detects you're working in a Deno pr
 | Skill | Purpose |
 |-------|---------|
 | `deno-guidance` | Core best practices, JSR packages, Deno CLI workflow |
+| `deno-deploy` | Deno Deploy deployment workflows |
 | `deno-frontend` | Fresh framework, Preact components, Tailwind CSS |
 | `deno-sandbox` | Sandbox SDK for safe code execution |
 
