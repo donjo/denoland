@@ -94,7 +94,7 @@ if (args.version) {
   Deno.exit(0);
 }
 
-console.log(green("Hello from $PROJECT_NAME!"));
+console.log(green("Hello from $PROJECT_NAME"));
 ```
 
 ### For Library
@@ -132,11 +132,11 @@ Create these files:
  * @example
  * ```ts
  * import { greet } from "@username/$PROJECT_NAME";
- * console.log(greet("World")); // "Hello, World!"
+ * console.log(greet("World")); // "Hello, World"
  * ```
  */
 export function greet(name: string): string {
-  return `Hello, ${name}!`;
+  return `Hello, ${name}`;
 }
 ```
 
@@ -146,7 +146,7 @@ import { assertEquals } from "jsr:@std/assert";
 import { greet } from "./mod.ts";
 
 Deno.test("greet returns correct message", () => {
-  assertEquals(greet("World"), "Hello, World!");
+  assertEquals(greet("World"), "Hello, World");
 });
 ```
 
@@ -179,13 +179,13 @@ const handler = (request: Request): Response => {
   const url = new URL(request.url);
 
   if (url.pathname === "/") {
-    return new Response("Welcome to the API!", {
+    return new Response("Welcome to the API", {
       headers: { "Content-Type": "text/plain" },
     });
   }
 
   if (url.pathname === "/api/hello") {
-    return Response.json({ message: "Hello from Deno!" });
+    return Response.json({ message: "Hello from Deno" });
   }
 
   return new Response("Not Found", { status: 404 });
