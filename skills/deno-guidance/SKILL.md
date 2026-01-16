@@ -82,35 +82,11 @@ In `deno.json`, you can exclude directories from formatting/linting:
 }
 ```
 
-## Deno Deploy Workflow
+## Deployment
 
-Reference: https://docs.deno.com/deploy/
-CLI Reference: https://docs.deno.com/runtime/reference/cli/deploy/
+For deploying to Deno Deploy, see the dedicated **deno-deploy** skill.
 
-Deno Deploy is the recommended deployment platform for Deno applications.
-
-### Deployment Commands
-
-```bash
-deno deploy create --org my-org    # Create a new app
-deno deploy env add KEY "value"    # Add environment variable
-deno deploy env load .env.prod     # Load env vars from file
-deno deploy --prod                 # Deploy to production
-```
-
-### Pre-Deployment Checklist
-
-1. Run `deno fmt` and `deno lint`
-2. Run `deno test` to verify everything works
-3. For Fresh apps: Run `deno task build`
-4. Deploy with `deno deploy --prod`
-
-### Edge Runtime Limitations
-
-Deno Deploy runs on the edge (globally distributed). Be aware:
-- No persistent filesystem (use KV or external storage)
-- Limited APIs compared to local Deno
-- Environment variables must be set via `deno deploy env`
+Quick command: `deno deploy --prod`
 
 ## Documentation Resources
 
