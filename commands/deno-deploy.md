@@ -7,9 +7,32 @@ argument-hint: "[--prod]"
 
 Use `deno deploy` command (NOT deployctl - that's for deprecated Deno Deploy Classic).
 
-## Pre-Flight Checks (RUN THESE FIRST)
+## Step 0: Locate the App Directory
+
+**FIRST**, determine where the Deno app is located:
+
+```bash
+# Check if deno.json exists in current directory
+if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
+  echo "APP_DIR: $(pwd)"
+else
+  # Look for deno.json in immediate subdirectories
+  find . -maxdepth 2 -name "deno.json" -o -name "deno.jsonc" 2>/dev/null | head -5
+fi
+```
+
+**Decision:**
+- If `deno.json` is in the current directory → use current directory
+- If `deno.json` found in a subdirectory → use that subdirectory (if multiple, ask user which one)
+- If no `deno.json` found → ask user where their app is located
+
+**All subsequent commands should run from the app directory.** Use absolute paths or `cd` to the app directory first.
+
+## Pre-Flight Checks (RUN THESE AFTER LOCATING APP)
 
 **CRITICAL: Run these checks BEFORE attempting any `deno deploy` commands.** Many deploy commands fail without an org context, and you cannot discover orgs via CLI without one already set.
+
+Run these from the app directory:
 
 ```bash
 # Check 1: Deno version (must be >= 2.4.2)

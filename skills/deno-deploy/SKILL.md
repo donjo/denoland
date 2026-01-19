@@ -20,7 +20,28 @@ This skill provides guidance for deploying applications to Deno Deploy.
 
 When a user asks to deploy to Deno Deploy, follow this decision tree:
 
-### Step 1: Pre-Flight Checks (ALWAYS RUN FIRST)
+### Step 0: Locate the App Directory (ALWAYS DO THIS FIRST)
+
+Before running any checks, find where the Deno app is located:
+
+```bash
+# Check if deno.json exists in current directory
+if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
+  echo "APP_DIR: $(pwd)"
+else
+  # Look for deno.json in immediate subdirectories
+  find . -maxdepth 2 -name "deno.json" -o -name "deno.jsonc" 2>/dev/null | head -5
+fi
+```
+
+**Decision:**
+- If `deno.json` is in the current directory → use current directory
+- If `deno.json` found in a subdirectory → use that subdirectory (if multiple found, ask user which one)
+- If no `deno.json` found → ask user where their app is located
+
+**All subsequent commands must run from the app directory.** Either `cd` to it or use absolute paths.
+
+### Step 1: Pre-Flight Checks (RUN FROM APP DIRECTORY)
 
 **CRITICAL:** Run these checks BEFORE attempting any `deno deploy` commands. Many deploy CLI commands (including `deno deploy orgs`) fail without an org already configured - you cannot discover orgs via CLI.
 
@@ -42,7 +63,7 @@ elif [ -f "_config.ts" ]; then echo "Framework: Lume (check imports)"; \
 else echo "Framework: Custom/Unknown"; fi
 ```
 
-### Step 2: Route Based on State
+### Step 2: Route Based on State (FROM APP DIRECTORY)
 
 **If `deploy.org` AND `deploy.app` exist in config:**
 1. Run framework-specific build command (see Framework Deployment section)
