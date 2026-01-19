@@ -56,10 +56,12 @@ else echo "Framework: Custom/Unknown"; fi
 **First, ask the user for their org name:**
 > "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/YOUR-ORG-NAME`. For personal accounts, this is usually your username."
 
-**Once you have the org name, tell the user:**
-> "Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser to complete app creation. Let me know when you've completed the setup."
+**Once you have the org name, run the create command yourself:**
+1. Warn the user first: "I'm going to create the app now. **A browser window will open** - please complete the app creation there."
+2. Run: `deno deploy create --org <ORG_NAME>`
+3. The command will wait for browser completion, then auto-deploy to production
 
-After user confirms, verify:
+After the command completes, verify:
 ```bash
 grep -E '"org"|"app"' deno.json deno.jsonc
 ```
