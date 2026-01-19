@@ -9,14 +9,14 @@ Use `deno deploy` command (NOT deployctl - that's for deprecated Deno Deploy Cla
 
 ## Pre-Flight Checks (RUN THESE FIRST)
 
-Before any deployment action, determine the current state:
+**CRITICAL: Run these checks BEFORE attempting any `deno deploy` commands.** Many deploy commands fail without an org context, and you cannot discover orgs via CLI without one already set.
 
 ```bash
 # Check 1: Deno version (must be >= 2.4.2)
 deno --version | head -1
 
-# Check 2: Does a deploy config already exist?
-grep -A5 '"deploy"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
+# Check 2: Does a deploy config with org exist?
+grep -E '"org"|"app"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
 
 # Check 3: Detect framework for build requirements
 if [ -d "islands" ] || [ -f "fresh.config.ts" ]; then echo "FRESH"; \
@@ -31,17 +31,23 @@ else echo "UNKNOWN_OR_CUSTOM"; fi
 
 ## State-Based Workflow
 
-### If `deploy.org` and `deploy.app` exist in config:
+### If `deploy.org` AND `deploy.app` exist in config:
 1. Build if needed (see Framework Build Commands below)
 2. Deploy: `deno deploy --prod`
 
-### If NO deploy config exists:
-⚠️ **REQUIRES BROWSER** - Tell the user:
-> "This is your first deployment. Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser to complete app creation. Let me know when done."
+### If NO org/app config exists:
+
+⚠️ **ASK THE USER FOR THEIR ORG NAME FIRST** - Do NOT run `deno deploy` or `deno deploy orgs` - they will fail without org context.
+
+Ask the user:
+> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/YOUR-ORG-NAME`. (For personal accounts, this is usually your username.)"
+
+Once you have the org name, tell the user:
+> "Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser to complete app creation. Let me know when done."
 
 After user confirms, verify:
 ```bash
-grep -A5 '"deploy"' deno.json deno.jsonc
+grep -E '"org"|"app"' deno.json deno.jsonc
 ```
 
 ## Framework Build Commands

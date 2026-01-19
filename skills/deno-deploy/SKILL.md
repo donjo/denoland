@@ -20,14 +20,16 @@ This skill provides guidance for deploying applications to Deno Deploy.
 
 When a user asks to deploy to Deno Deploy, follow this decision tree:
 
-### Step 1: Pre-Flight Checks
+### Step 1: Pre-Flight Checks (ALWAYS RUN FIRST)
+
+**CRITICAL:** Run these checks BEFORE attempting any `deno deploy` commands. Many deploy CLI commands (including `deno deploy orgs`) fail without an org already configured - you cannot discover orgs via CLI.
 
 ```bash
 # Check Deno version
 deno --version | head -1
 
-# Check for existing deploy config
-grep -A5 '"deploy"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
+# Check for existing deploy config WITH org
+grep -E '"org"|"app"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
 
 # Detect framework
 if [ -d "islands" ] || [ -f "fresh.config.ts" ]; then echo "Framework: Fresh"; \
@@ -42,28 +44,43 @@ else echo "Framework: Custom/Unknown"; fi
 
 ### Step 2: Route Based on State
 
-**If `deploy.org` and `deploy.app` exist:**
+**If `deploy.org` AND `deploy.app` exist in config:**
 1. Run framework-specific build command (see Framework Deployment section)
 2. Deploy: `deno deploy --prod`
 3. Parse output for deployment URL
 
-**If NO deploy config exists:**
-Tell the user (this step REQUIRES their browser):
-> "I see this is your first deployment. The Deno Deploy CLI needs to create an app through your browser. Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser. Let me know when you've completed the setup, and I'll verify it worked."
+**If NO deploy config exists (no org/app found):**
+
+⚠️ **DO NOT run `deno deploy` or `deno deploy orgs`** - they will fail with "No organization was selected" error.
+
+**First, ask the user for their org name:**
+> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/YOUR-ORG-NAME`. For personal accounts, this is usually your username."
+
+**Once you have the org name, tell the user:**
+> "Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser to complete app creation. Let me know when you've completed the setup."
 
 After user confirms, verify:
 ```bash
-grep -A5 '"deploy"' deno.json deno.jsonc
+grep -E '"org"|"app"' deno.json deno.jsonc
 ```
 
 ### Step 3: Handle Common Errors
 
 | Error | Agent Response |
 |-------|----------------|
-| "No organization was selected" | Ask: "What's your Deno Deploy org name? Find it at console.deno.com in the URL" |
+| "No organization was selected" | You hit this because you didn't check config first. Ask user for org name (see Step 2). |
 | "No entrypoint found" | Look for main.ts, mod.ts, src/main.ts, server.ts - suggest `--entrypoint` flag |
 | "authorization required" | Token expired/missing - guide user to re-authenticate or set up CI/CD token |
 | "Minimum Deno version required" | User needs to upgrade Deno: `deno upgrade` |
+
+### Commands That Fail Without Org Context
+
+These commands will error if no org is configured - **do not try them to "discover" orgs:**
+- `deno deploy` (without --org flag)
+- `deno deploy orgs`
+- `deno deploy switch`
+- `deno deploy env list`
+- `deno deploy logs`
 
 ## Authentication
 
