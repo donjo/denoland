@@ -63,7 +63,7 @@ else echo "UNKNOWN_OR_CUSTOM"; fi
 ⚠️ **ASK THE USER FOR THEIR ORG NAME FIRST** - Do NOT run `deno deploy` or `deno deploy orgs` - they will fail without org context.
 
 Ask the user:
-> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/YOUR-ORG-NAME`. (For personal accounts, this is usually your username.)"
+> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/YOUR-ORG-NAME`. (For personal accounts, this is usually your username.)"
 
 Once you have the org name:
 1. Warn the user: "I'm going to create the app now. **A browser window will open** - please complete the app creation there."
@@ -110,6 +110,6 @@ grep -E '"org"|"app"' deno.json deno.jsonc
 
 ## Finding Your Organization Name
 
-Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/orgs/your-org-name`).
+Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/your-org-name`).
 
 See the deno-deploy skill for detailed guidance on authentication, CI/CD tokens, environment variables, static sites, and troubleshooting.

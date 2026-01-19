@@ -75,7 +75,7 @@ else echo "Framework: Custom/Unknown"; fi
 ⚠️ **DO NOT run `deno deploy` or `deno deploy orgs`** - they will fail with "No organization was selected" error.
 
 **First, ask the user for their org name:**
-> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/YOUR-ORG-NAME`. For personal accounts, this is usually your username."
+> "What is your Deno Deploy organization name? You can find it by visiting https://console.deno.com - look at the URL, it will be something like `console.deno.com/YOUR-ORG-NAME`. For personal accounts, this is usually your username."
 
 **Once you have the org name, run the create command yourself:**
 1. Warn the user first: "I'm going to create the app now. **A browser window will open** - please complete the app creation there."
@@ -163,7 +163,7 @@ To deploy without browser interaction (for CI/CD pipelines or automated workflow
 The Deno Deploy CLI requires an organization context for most operations. To find your org name:
 
 1. Visit https://console.deno.com
-2. Your org is in the URL: `console.deno.com/orgs/YOUR-ORG-NAME`
+2. Your org is in the URL: `console.deno.com/YOUR-ORG-NAME`
 
 **Note:** Commands like `deno deploy orgs` and `deno deploy switch` require an existing org context to work - this is a CLI limitation. Always find your org name from the console URL first.
 
@@ -503,7 +503,7 @@ This error occurs because the CLI needs an organization context. Unfortunately, 
 
 **Solution:**
 
-1. **Find your org name manually:** Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/orgs/donjo` means org is `donjo`)
+1. **Find your org name manually:** Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/donjo` means org is `donjo`)
 
 2. **Specify org explicitly:**
    ```bash
@@ -517,7 +517,7 @@ This error occurs because the CLI needs an organization context. Unfortunately, 
    ```
 
 **For Claude:** When you see this error, ask the user:
-> "What is your Deno Deploy organization name? You can find it by visiting console.deno.com - look at the URL, it will be something like `console.deno.com/orgs/your-org-name`."
+> "What is your Deno Deploy organization name? You can find it by visiting console.deno.com - look at the URL, it will be something like `console.deno.com/your-org-name`."
 
 ### "No entrypoint found"
 
