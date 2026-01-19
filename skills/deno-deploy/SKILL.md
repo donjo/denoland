@@ -14,8 +14,60 @@ This skill provides guidance for deploying applications to Deno Deploy.
 - `deployctl` is for Deno Deploy Classic (deprecated)
 - `deno deploy` is the modern, integrated command built into the Deno CLI
 - If you find yourself reaching for `deployctl`, stop and use `deno deploy` instead
+- **Requires Deno >= 2.4.2** - the `deno deploy` subcommand was introduced in Deno 2.4
+
+## Agent Workflow Guide
+
+When a user asks to deploy to Deno Deploy, follow this decision tree:
+
+### Step 1: Pre-Flight Checks
+
+```bash
+# Check Deno version
+deno --version | head -1
+
+# Check for existing deploy config
+grep -A5 '"deploy"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
+
+# Detect framework
+if [ -d "islands" ] || [ -f "fresh.config.ts" ]; then echo "Framework: Fresh"; \
+elif [ -f "astro.config.mjs" ] || [ -f "astro.config.ts" ]; then echo "Framework: Astro"; \
+elif [ -f "next.config.js" ] || [ -f "next.config.mjs" ]; then echo "Framework: Next.js"; \
+elif [ -f "nuxt.config.ts" ]; then echo "Framework: Nuxt"; \
+elif [ -f "remix.config.js" ]; then echo "Framework: Remix"; \
+elif [ -f "svelte.config.js" ]; then echo "Framework: SvelteKit"; \
+elif [ -f "_config.ts" ]; then echo "Framework: Lume (check imports)"; \
+else echo "Framework: Custom/Unknown"; fi
+```
+
+### Step 2: Route Based on State
+
+**If `deploy.org` and `deploy.app` exist:**
+1. Run framework-specific build command (see Framework Deployment section)
+2. Deploy: `deno deploy --prod`
+3. Parse output for deployment URL
+
+**If NO deploy config exists:**
+Tell the user (this step REQUIRES their browser):
+> "I see this is your first deployment. The Deno Deploy CLI needs to create an app through your browser. Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser. Let me know when you've completed the setup, and I'll verify it worked."
+
+After user confirms, verify:
+```bash
+grep -A5 '"deploy"' deno.json deno.jsonc
+```
+
+### Step 3: Handle Common Errors
+
+| Error | Agent Response |
+|-------|----------------|
+| "No organization was selected" | Ask: "What's your Deno Deploy org name? Find it at console.deno.com in the URL" |
+| "No entrypoint found" | Look for main.ts, mod.ts, src/main.ts, server.ts - suggest `--entrypoint` flag |
+| "authorization required" | Token expired/missing - guide user to re-authenticate or set up CI/CD token |
+| "Minimum Deno version required" | User needs to upgrade Deno: `deno upgrade` |
 
 ## Authentication
+
+### Interactive Authentication (Default)
 
 The first time you run `deno deploy`, it will open a browser for authentication:
 
@@ -32,6 +84,37 @@ deno deploy
 
 **For Claude:** When running `deno deploy` commands, prompt the user:
 > "Please complete the authorization in your browser, then let me know when you're done."
+
+### Non-Interactive Authentication (CI/CD & Automation)
+
+To deploy without browser interaction (for CI/CD pipelines or automated workflows):
+
+1. **Create a Deploy Token in the web UI:**
+   - Visit https://console.deno.com/account/access-tokens
+   - Click "New Access Token"
+   - Give it a descriptive name (e.g., "GitHub Actions CI")
+   - Copy the token immediately (shown only once)
+
+2. **Use the token:**
+   ```bash
+   # Option 1: Environment variable (recommended for CI/CD)
+   export DENO_DEPLOY_TOKEN="your-token-here"
+   deno deploy --prod
+
+   # Option 2: Inline flag (for one-off commands)
+   deno deploy --token "your-token-here" --prod
+   ```
+
+3. **For GitHub Actions:**
+   ```yaml
+   - name: Deploy to Deno Deploy
+     env:
+       DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+     run: deno deploy --prod
+   ```
+
+**For Claude:** If the user wants fully automated deploys without browser prompts, ask:
+> "Do you have a Deno Deploy access token set up? If not, you can create one at https://console.deno.com/account/access-tokens, then set it as the `DENO_DEPLOY_TOKEN` environment variable."
 
 ## First-Time Setup & Organization
 
@@ -270,14 +353,91 @@ deno deploy setup-aws --org my-org --app my-app
 deno deploy setup-gcp --org my-org --app my-app
 ```
 
-## Fresh Framework Deployment
+## Framework-Specific Deployment
 
-Fresh apps require a build step before deployment:
+Deno Deploy supports multiple frameworks. The CLI auto-detects your framework and configures the build appropriately.
+
+### Supported Frameworks
+
+| Framework | Detection Files | Build Command | Notes |
+|-----------|-----------------|---------------|-------|
+| **Fresh** | `islands/`, `fresh.config.ts` | `deno task build` | Deno-native, island architecture |
+| **Astro** | `astro.config.mjs`, `astro.config.ts` | `npm run build` or `deno task build` | Static or SSR |
+| **Next.js** | `next.config.js`, `next.config.mjs` | `npm run build` | Requires `nodeModulesDir: "auto"` |
+| **Nuxt** | `nuxt.config.ts` | `npm run build` | Vue SSR framework |
+| **Remix** | `remix.config.js` | `npm run build` | React SSR framework |
+| **SolidStart** | `app.config.ts` with solid | `npm run build` | SolidJS SSR |
+| **SvelteKit** | `svelte.config.js` | `npm run build` | Svelte SSR framework |
+| **Lume** | `_config.ts` with lume import | `deno task build` | Deno-native static site |
+
+### Fresh (Deno-Native)
 
 ```bash
 deno task build
 deno deploy --prod
 ```
+
+### Astro
+
+```bash
+# If using npm
+npm run build
+deno deploy --prod
+
+# If using Deno tasks
+deno task build
+deno deploy --prod
+```
+
+### Next.js
+
+Next.js requires Node.js compatibility mode:
+
+1. Ensure `deno.json` has:
+   ```json
+   {
+     "nodeModulesDir": "auto"
+   }
+   ```
+
+2. Build and deploy:
+   ```bash
+   npm install
+   npm run build
+   deno deploy --prod --allow-node-modules
+   ```
+
+### Nuxt / Remix / SvelteKit / SolidStart
+
+These npm-based frameworks follow a similar pattern:
+
+```bash
+npm install
+npm run build
+deno deploy --prod
+```
+
+If you encounter issues with node_modules:
+```bash
+deno deploy --prod --allow-node-modules
+```
+
+### Lume (Static Sites)
+
+```bash
+deno task build
+deno deploy --prod
+```
+
+### Custom / No Framework
+
+For custom servers or apps without a recognized framework:
+
+1. Ensure you have an entrypoint (e.g., `main.ts`, `server.ts`)
+2. Deploy directly:
+   ```bash
+   deno deploy --entrypoint main.ts --prod
+   ```
 
 ## Command Reference
 

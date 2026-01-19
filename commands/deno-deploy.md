@@ -7,47 +7,78 @@ argument-hint: "[--prod]"
 
 Use `deno deploy` command (NOT deployctl - that's for deprecated Deno Deploy Classic).
 
+## Pre-Flight Checks (RUN THESE FIRST)
+
+Before any deployment action, determine the current state:
+
+```bash
+# Check 1: Deno version (must be >= 2.4.2)
+deno --version | head -1
+
+# Check 2: Does a deploy config already exist?
+grep -A5 '"deploy"' deno.json deno.jsonc 2>/dev/null || echo "NO_DEPLOY_CONFIG"
+
+# Check 3: Detect framework for build requirements
+if [ -d "islands" ] || [ -f "fresh.config.ts" ]; then echo "FRESH"; \
+elif [ -f "astro.config.mjs" ] || [ -f "astro.config.ts" ]; then echo "ASTRO"; \
+elif [ -f "next.config.js" ] || [ -f "next.config.mjs" ]; then echo "NEXTJS"; \
+elif [ -f "nuxt.config.ts" ]; then echo "NUXT"; \
+elif [ -f "remix.config.js" ]; then echo "REMIX"; \
+elif [ -f "svelte.config.js" ]; then echo "SVELTEKIT"; \
+elif [ -f "_config.ts" ] && grep -q "lume" _config.ts 2>/dev/null; then echo "LUME"; \
+else echo "UNKNOWN_OR_CUSTOM"; fi
+```
+
+## State-Based Workflow
+
+### If `deploy.org` and `deploy.app` exist in config:
+1. Build if needed (see Framework Build Commands below)
+2. Deploy: `deno deploy --prod`
+
+### If NO deploy config exists:
+⚠️ **REQUIRES BROWSER** - Tell the user:
+> "This is your first deployment. Please run `deno deploy create --org YOUR_ORG_NAME` in your terminal - it will open a browser to complete app creation. Let me know when done."
+
+After user confirms, verify:
+```bash
+grep -A5 '"deploy"' deno.json deno.jsonc
+```
+
+## Framework Build Commands
+
+| Framework | Detection | Build Command |
+|-----------|-----------|---------------|
+| Fresh | `islands/` dir or `fresh.config.ts` | `deno task build` |
+| Astro | `astro.config.*` | `npm run build` or `deno task build` |
+| Next.js | `next.config.*` | `npm run build` |
+| Nuxt | `nuxt.config.ts` | `npm run build` |
+| Remix | `remix.config.js` | `npm run build` |
+| SvelteKit | `svelte.config.js` | `npm run build` |
+| Lume | `_config.ts` with lume import | `deno task build` |
+| Custom/None | - | Check for `build` task in deno.json |
+
 ## Quick Reference
 
 | Command | Purpose |
 |---------|---------|
 | `deno deploy --prod` | Production deployment |
 | `deno deploy` | Preview deployment |
-| `deno deploy create --org <name>` | Create new app |
+| `deno deploy create --org <name>` | Create new app (⚠️ opens browser) |
 | `deno deploy env add <var> <value>` | Add environment variable |
 | `deno deploy env list` | List environment variables |
 | `deno deploy env load <file>` | Load vars from .env file |
 | `deno deploy logs` | View deployment logs |
 
+## Common Flags
+
+- `--prod` - Deploy to production (default is preview)
+- `--org <name>` - Target specific organization (avoids interactive prompt)
+- `--app <name>` - Target specific app (avoids interactive prompt)
+- `--entrypoint <file>` - Specify entry file
+- `--allow-node-modules` - Include node_modules (needed for some npm frameworks)
+
 ## Finding Your Organization Name
 
 Visit https://console.deno.com - your org is in the URL path (e.g., `console.deno.com/orgs/your-org-name`).
 
-## Workflow
-
-**IMPORTANT: Before deploying, check if an app already exists:**
-
-```bash
-# Check deno.json for existing deploy config
-cat deno.json | grep -A5 '"deploy"'
-```
-
-If there's NO `"deploy"` key in deno.json, you must create an app first:
-
-1. **Create app (first time only):** Run `deno deploy create --org <name>`
-   - This opens a browser - complete the app creation there
-   - Tell user: "Please complete the app creation in your browser, then let me know when done"
-   - **Verify success:** After completion, check that `deno.json` now has a `"deploy"` section with `"org"` and `"app"` keys
-2. **Fresh app?** Run `deno task build` first
-3. **Deploy:** Run `deno deploy --prod`
-
-**Note:** The `create` command does NOT accept `--prod`. Use `--prod` only with `deno deploy` (the deploy command).
-
-## Common Flags
-
-- `--prod` - Deploy to production (default is preview)
-- `--org <name>` - Target specific organization
-- `--app <name>` - Target specific app
-- `--entrypoint <file>` - Specify entry file
-
-See the deno-deploy skill for detailed guidance on authentication, environment variables, static sites, and troubleshooting.
+See the deno-deploy skill for detailed guidance on authentication, CI/CD tokens, environment variables, static sites, and troubleshooting.
