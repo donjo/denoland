@@ -2,7 +2,7 @@
 
 A Claude Code plugin for building modern Deno applications with Fresh, JSR, and Deno Deploy.
 
-**Current Version:** 0.5.4
+**Current Version:** 0.6.0
 
 ## What This Plugin Does
 
