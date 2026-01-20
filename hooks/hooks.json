@@ -9,6 +9,26 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "deno run --allow-read --allow-write --allow-env ${CLAUDE_PLUGIN_ROOT}/hooks/capture-tool-use.ts"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "deno run --allow-read --allow-write --allow-env ${CLAUDE_PLUGIN_ROOT}/hooks/capture-user-prompt.ts"
+          }
+        ]
+      }
     ]
   }
 }
