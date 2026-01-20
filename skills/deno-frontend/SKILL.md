@@ -1,11 +1,24 @@
 ---
 name: deno-frontend
-description: Fresh framework, Preact components, and Tailwind CSS patterns for Deno frontend development
+description: Use when building web UIs with Fresh framework, using Preact components, or adding Tailwind CSS styling in Deno
 ---
 
 # Deno Frontend Development
 
-This skill provides patterns for building frontend applications with Fresh, Preact, and Tailwind CSS. Apply these practices when building web applications in Deno.
+## Overview
+
+This skill covers frontend development in Deno using Fresh (Deno's web framework), Preact (a lightweight React alternative), and Tailwind CSS. Fresh uses "island architecture" where pages render on the server and only interactive parts ship JavaScript to the browser.
+
+## When to Use This Skill
+
+- Creating a new Fresh web application
+- Building interactive UI components (islands)
+- Adding server-rendered pages and routes
+- Integrating Tailwind CSS for styling
+- Choosing between islands (client-side) vs components (server-only)
+- Working with Preact hooks and signals
+
+Apply these practices when building web applications in Deno.
 
 ## Fresh Framework
 
@@ -245,3 +258,78 @@ deno deploy --prod        # Deploy to production
 | Add an API route | Create `routes/api/endpoint.ts` |
 | Add interactive component | Create `islands/ComponentName.tsx` |
 | Add static component | Create `components/ComponentName.tsx` |
+
+## Common Mistakes
+
+**Putting too much JavaScript in islands**
+```tsx
+// ❌ Wrong - entire page as an island (ships all JS to client)
+// islands/HomePage.tsx
+export default function HomePage() {
+  return (
+    <div>
+      <Header />
+      <MainContent />  {/* Most of this doesn't need interactivity */}
+      <Footer />
+    </div>
+  );
+}
+
+// ✅ Correct - only interactive parts are islands
+// routes/index.tsx (server component)
+import Counter from "../islands/Counter.tsx";
+
+export default function HomePage() {
+  return (
+    <div>
+      <Header />
+      <MainContent />
+      <Counter />  {/* Only this needs to be an island */}
+      <Footer />
+    </div>
+  );
+}
+```
+
+**Passing non-serializable props to islands**
+```tsx
+// ❌ Wrong - functions can't be serialized
+<Counter onUpdate={(val) => console.log(val)} />
+
+// ✅ Correct - only pass JSON-serializable data
+<Counter initialValue={5} label="Click count" />
+```
+
+**Using `className` instead of `class`**
+```tsx
+// ❌ Works but unnecessary in Preact
+<div className="container">
+
+// ✅ Preact supports native HTML attribute
+<div class="container">
+```
+
+**Forgetting to build before deploying Fresh 2.0**
+```bash
+# ❌ Wrong - Fresh 2.0 requires a build step
+deno deploy --prod
+
+# ✅ Correct - build first, then deploy
+deno task build
+deno deploy --prod
+```
+
+**Creating islands for non-interactive content**
+```tsx
+// ❌ Wrong - this doesn't need to be an island (no interactivity)
+// islands/StaticCard.tsx
+export default function StaticCard({ title, body }) {
+  return <div class="card"><h2>{title}</h2><p>{body}</p></div>;
+}
+
+// ✅ Correct - use a regular component (no JS shipped)
+// components/StaticCard.tsx
+export default function StaticCard({ title, body }) {
+  return <div class="card"><h2>{title}</h2><p>{body}</p></div>;
+}
+```

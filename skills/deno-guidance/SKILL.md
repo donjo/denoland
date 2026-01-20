@@ -1,11 +1,24 @@
 ---
 name: deno-guidance
-description: Core Deno development best practices, JSR package management, and deployment workflows
+description: Use when starting any Deno project, choosing packages, configuring deno.json, or running CLI commands
 ---
 
 # Deno Development Guidance
 
-This skill provides foundational knowledge for building modern Deno applications. Apply these practices whenever working in a Deno project (identified by the presence of `deno.json`).
+## Overview
+
+This skill provides foundational knowledge for building modern Deno applications. Deno is a secure JavaScript/TypeScript runtime that runs TypeScript directly, has built-in tools (formatter, linter, test runner), and uses modern package management through JSR.
+
+## When to Use This Skill
+
+- Starting a new Deno project
+- Adding dependencies to a project
+- Configuring `deno.json` settings
+- Running Deno CLI commands (fmt, lint, test)
+- Setting up import maps
+- Understanding Deno's permission system
+
+Apply these practices whenever working in a Deno project (identified by the presence of `deno.json`).
 
 ## Package Management Priority
 
@@ -111,3 +124,50 @@ When you need more information:
 | `deno upgrade` | Update packages |
 | `deno doc <pkg>` | View package documentation |
 | `deno deploy --prod` | Deploy to Deno Deploy |
+
+## Common Mistakes
+
+**Using `deno.land/x` instead of JSR**
+```typescript
+// ❌ Wrong - deprecated registry
+import { serve } from "https://deno.land/x/http/mod.ts";
+
+// ✅ Correct - use JSR
+import { serve } from "jsr:@std/http";
+```
+
+**Forgetting to run fmt/lint before committing**
+```bash
+# ❌ Committing without checking
+git add . && git commit -m "changes"
+
+# ✅ Always format and lint first
+deno fmt && deno lint && git add . && git commit -m "changes"
+```
+
+**Using `https://deno.land/std/` for standard library**
+```typescript
+// ❌ Wrong - old URL
+import { join } from "https://deno.land/std/path/mod.ts";
+
+// ✅ Correct - JSR standard library
+import { join } from "jsr:@std/path";
+```
+
+**Running code without permission flags**
+```bash
+# ❌ Confusing error - "Requires net access"
+deno run server.ts
+
+# ✅ Grant specific permissions
+deno run --allow-net server.ts
+```
+
+**Not using `deno add` for dependencies**
+```bash
+# ❌ Manually editing imports without updating deno.json
+# (works, but misses lockfile benefits)
+
+# ✅ Use deno add to manage dependencies
+deno add jsr:@std/http
+```

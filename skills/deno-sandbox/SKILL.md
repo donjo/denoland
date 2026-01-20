@@ -1,9 +1,13 @@
 ---
 name: deno-sandbox
-description: Deno Sandbox SDK for safely executing untrusted code in isolated microVMs
+description: Use when building features that execute untrusted user code, AI-generated code, or need isolated code execution environments
 ---
 
 # Deno Sandboxes
+
+## Overview
+
+Deno Sandboxes provide secure, isolated environments for running untrusted code. Each sandbox runs in its own Linux microVM (using Firecracker, the same technology as AWS Lambda) with a separate filesystem, network, and process space. This makes them ideal for code playgrounds, AI agent tool execution, and multi-tenant applications.
 
 Reference: https://deno.com/deploy/sandboxes
 
@@ -291,3 +295,97 @@ Key classes:
 | Read file | `await sandbox.readFile(path)` |
 | Kill process | `await child.kill()` |
 | Check status | `const status = await child.status` |
+
+## Common Mistakes
+
+**Forgetting to dispose of sandboxes**
+```typescript
+// ❌ Wrong - sandbox leaks resources
+const sandbox = await Sandbox.create();
+await sandbox.spawn("echo", { args: ["hello"] });
+// sandbox never disposed!
+
+// ✅ Correct - use "await using" for automatic cleanup
+await using sandbox = await Sandbox.create();
+await sandbox.spawn("echo", { args: ["hello"] });
+// sandbox automatically disposed when scope ends
+```
+
+**Giving user code too many permissions**
+```typescript
+// ❌ Wrong - gives untrusted code full access
+const child = await sandbox.spawn("deno", {
+  args: ["run", "--allow-all", "/tmp/user_code.ts"],
+});
+
+// ✅ Correct - restrict permissions to what's needed
+const child = await sandbox.spawn("deno", {
+  args: ["run", "--allow-none", "/tmp/user_code.ts"],  // No permissions
+});
+
+// Or if network is truly needed:
+const child = await sandbox.spawn("deno", {
+  args: ["run", "--allow-net", "/tmp/user_code.ts"],  // Only network
+});
+```
+
+**Not handling process output properly**
+```typescript
+// ❌ Wrong - forgetting to pipe stdout/stderr
+const child = await sandbox.spawn("deno", { args: ["run", "script.ts"] });
+const output = await child.output();
+// output.stdout is empty because we didn't pipe it!
+
+// ✅ Correct - pipe the streams you need
+const child = await sandbox.spawn("deno", {
+  args: ["run", "script.ts"],
+  stdout: "piped",
+  stderr: "piped",
+});
+const output = await child.output();
+console.log(new TextDecoder().decode(output.stdout));
+```
+
+**Not setting timeouts for user code execution**
+```typescript
+// ❌ Wrong - user code could run forever
+const child = await sandbox.spawn("deno", {
+  args: ["run", "/tmp/user_code.ts"],
+});
+await child.output();  // Could hang indefinitely
+
+// ✅ Correct - implement timeout handling
+const child = await sandbox.spawn("deno", {
+  args: ["run", "/tmp/user_code.ts"],
+  stdout: "piped",
+  stderr: "piped",
+});
+
+// Set a timeout to kill the process
+const timeoutId = setTimeout(() => child.kill(), 5000);  // 5 second limit
+
+try {
+  const output = await child.output();
+  return output;
+} finally {
+  clearTimeout(timeoutId);
+}
+```
+
+**Trusting sandbox output without validation**
+```typescript
+// ❌ Wrong - directly using untrusted output as code
+const result = await runUserCode(code);
+// Never execute or inject untrusted output!
+
+// ✅ Correct - validate and sanitize output
+const result = await runUserCode(code);
+try {
+  const parsed = JSON.parse(result);  // Parse as data, not code
+  if (isValidResponse(parsed)) {
+    return parsed;
+  }
+} catch {
+  throw new Error("Invalid response from sandbox");
+}
+```

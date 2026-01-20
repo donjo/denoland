@@ -11,7 +11,7 @@
     {
       "name": "denoland",
       "description": "Build modern Deno apps with Fresh, JSR, and Deno Deploy. Enforces best practices like using JSR over deprecated deno.land/x, includes Fresh/Preact/Tailwind patterns, Sandbox SDK guidance, and deployment workflows.",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "author": {
         "name": "John Donmoyer",
         "email": ""
