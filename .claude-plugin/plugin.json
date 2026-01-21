@@ -1,6 +1,6 @@
 {
   "name": "denoland",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Build modern Deno apps with Fresh, JSR, and Deno Deploy",
   "author": {
     "name": "John Donmoyer"

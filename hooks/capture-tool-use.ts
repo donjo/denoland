@@ -1,16 +1,18 @@
 /**
  * capture-tool-use.ts
  *
- * This hook runs after every tool call in Claude Code.
+ * This hook runs after every tool call in Claude Code (PostToolUse event).
  * When dev mode is enabled, it captures tool usage data to a JSONL file
  * for later analysis of failure patterns and usage patterns.
  *
- * Environment variables available from Claude Code:
- * - TOOL_NAME: The name of the tool that was called
- * - TOOL_INPUT: JSON string of the tool's input parameters
- * - TOOL_OUTPUT: JSON string of the tool's output
- * - TOOL_USE_ERROR: Error message if the tool failed (undefined if successful)
- * - CLAUDE_SESSION_ID: Unique identifier for the current session
+ * Data is received via stdin as JSON with the following structure:
+ * {
+ *   "session_id": "abc123",
+ *   "tool_name": "Bash",
+ *   "tool_input": { ... },
+ *   "tool_response": { ... },
+ *   "tool_use_id": "toolu_01ABC123..."
+ * }
  */
 
 // Helper function to check if a file or directory exists
@@ -21,6 +23,27 @@ async function exists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Helper function to read all data from stdin
+async function readStdin(): Promise<string> {
+  const decoder = new TextDecoder();
+  const chunks: string[] = [];
+
+  for await (const chunk of Deno.stdin.readable) {
+    chunks.push(decoder.decode(chunk));
+  }
+
+  return chunks.join("");
+}
+
+// Define the expected structure of hook input data
+interface HookInput {
+  session_id?: string;
+  tool_name?: string;
+  tool_input?: Record<string, unknown>;
+  tool_response?: Record<string, unknown>;
+  tool_use_id?: string;
 }
 
 // Main function that runs the capture logic
@@ -43,41 +66,27 @@ async function main() {
     Deno.exit(0);
   }
 
-  // Dev mode is enabled - capture the tool usage data
-
-  // Safely parse JSON from environment variables
-  let toolInput = {};
-  let toolOutput = {};
+  // Dev mode is enabled - read and capture the tool usage data from stdin
+  let hookData: HookInput = {};
 
   try {
-    const inputStr = Deno.env.get("TOOL_INPUT");
-    if (inputStr) {
-      toolInput = JSON.parse(inputStr);
+    const stdinContent = await readStdin();
+    if (stdinContent.trim()) {
+      hookData = JSON.parse(stdinContent);
     }
   } catch {
-    // If parsing fails, store the raw string
-    toolInput = { raw: Deno.env.get("TOOL_INPUT") || "" };
+    // If parsing fails, log with empty data
+    hookData = {};
   }
 
-  try {
-    const outputStr = Deno.env.get("TOOL_OUTPUT");
-    if (outputStr) {
-      toolOutput = JSON.parse(outputStr);
-    }
-  } catch {
-    // If parsing fails, store the raw string
-    toolOutput = { raw: Deno.env.get("TOOL_OUTPUT") || "" };
-  }
-
-  // Build the log record
+  // Build the log record from the parsed stdin data
   const record = {
     timestamp: new Date().toISOString(),
-    sessionId: Deno.env.get("CLAUDE_SESSION_ID") || "unknown",
-    tool: Deno.env.get("TOOL_NAME") || "unknown",
-    input: toolInput,
-    output: toolOutput,
-    success: !Deno.env.get("TOOL_USE_ERROR"),
-    error: Deno.env.get("TOOL_USE_ERROR") || null,
+    sessionId: hookData.session_id || "unknown",
+    tool: hookData.tool_name || "unknown",
+    toolUseId: hookData.tool_use_id || null,
+    input: hookData.tool_input || {},
+    output: hookData.tool_response || {},
   };
 
   // Append to the log file

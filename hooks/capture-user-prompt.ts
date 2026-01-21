@@ -1,13 +1,16 @@
 /**
  * capture-user-prompt.ts
  *
- * This hook runs when the user submits a message to Claude Code.
+ * This hook runs when the user submits a message to Claude Code (UserPromptSubmit event).
  * When dev mode is enabled, it captures user prompts to a JSONL file
  * for later analysis of conversation patterns and failure indicators.
  *
- * Environment variables available from Claude Code:
- * - USER_PROMPT: The text of the user's message
- * - CLAUDE_SESSION_ID: Unique identifier for the current session
+ * Data is received via stdin as JSON with the following structure:
+ * {
+ *   "session_id": "abc123",
+ *   "prompt": "The user's message text",
+ *   "cwd": "/current/working/directory"
+ * }
  */
 
 // Helper function to check if a file or directory exists
@@ -18,6 +21,25 @@ async function exists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Helper function to read all data from stdin
+async function readStdin(): Promise<string> {
+  const decoder = new TextDecoder();
+  const chunks: string[] = [];
+
+  for await (const chunk of Deno.stdin.readable) {
+    chunks.push(decoder.decode(chunk));
+  }
+
+  return chunks.join("");
+}
+
+// Define the expected structure of hook input data
+interface HookInput {
+  session_id?: string;
+  prompt?: string;
+  cwd?: string;
 }
 
 // Main function that runs the capture logic
@@ -40,13 +62,26 @@ async function main() {
     Deno.exit(0);
   }
 
-  // Dev mode is enabled - capture the user prompt data
-  const prompt = Deno.env.get("USER_PROMPT") || "";
+  // Dev mode is enabled - read and capture the user prompt data from stdin
+  let hookData: HookInput = {};
 
-  // Build the log record
+  try {
+    const stdinContent = await readStdin();
+    if (stdinContent.trim()) {
+      hookData = JSON.parse(stdinContent);
+    }
+  } catch {
+    // If parsing fails, log with empty data
+    hookData = {};
+  }
+
+  const prompt = hookData.prompt || "";
+
+  // Build the log record from the parsed stdin data
   const record = {
     timestamp: new Date().toISOString(),
-    sessionId: Deno.env.get("CLAUDE_SESSION_ID") || "unknown",
+    sessionId: hookData.session_id || "unknown",
+    cwd: hookData.cwd || null,
     prompt: prompt,
     promptLength: prompt.length,
   };
